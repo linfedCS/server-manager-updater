@@ -46,9 +46,11 @@ def check_version():
         error = stderr.read().decode()
 
         if error.strip():
-            return logger.warning(f"Cannot read steam.inf file: {error} - {datetime.now().isoformat()}")
+            logger.warning(f"Cannot read steam.inf file: {error} - {datetime.now().isoformat()}")
+            return
 
         server_version = str(re.sub(r"\D", "", output))
+        logger.info(f"Server version: {server_version}")
 
         logger.info(f"Getting app version - {datetime.now().isoformat()}")
 
@@ -56,26 +58,26 @@ def check_version():
         params = {"key": key}
         response = requests.get("https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1/", params=params)
 
-        if response.ok:
-            logger.info(f"App version received - {datetime.now().isoformat()}")
-            data = response.json()
-            return data
-        else:
-            logger.warning(f"Couldn't get version from API: {e} - {datetime.now().isoformat()}")
+        if  not response.ok:
+            logger.warning(f"Couldn't get version from API: {response.status_code} - {datetime.now().isoformat()}")
+            return
 
+        data = response.json()
         app_version = str(data["result"]["app"]["version"])
+        logger.info(f"App version: {app_version}")
 
         if server_version != app_version:
-            logger.info(f"Server version is out date - {datetime.now().isoformat()}")
+            logger.info(f"Server version is outdated - {datetime.now().isoformat()}")
 
             logger.info(f"Getting status servers - {datetime.now().isoformat()}")
             status_response = requests.get("https://dev.linfed.ru/api/servers")
 
-            if status_response.ok:
-                logger.info(f"Servers status received - {datetime.now().isoformat()}")
-                status_data = response.json()
-                return status_data
+            if not status_response.ok:
+                logger.warning(f"Couldn't get server status: {status_response.status_code}")
+                return
 
+            status_data = status_response.json()
+            
             logger.info(f"Sending alert - {datetime.now().isoformat()}")
             for status in status_data:
                 if status["status"] == "online":
