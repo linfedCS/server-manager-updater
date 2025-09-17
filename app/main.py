@@ -93,7 +93,9 @@ def check_version():
                         ssh.exec_command(f'cs2-server @prac{status["id"]} stop')
 
             logger.info(f"Starting server update - {datetime.now().isoformat()}")
-            ssh.exec_command('cs2-server update')
+            cout = ssh.exec_command('cs2-server update')
+            com_out = cout.read().decode()
+            logger.warning(f"Output - {com_out}")
         else:
             logger.info(f"Server is up to date! Current version{server_version} - {datetime.now().isoformat()}")
 
