@@ -95,9 +95,11 @@ def check_version():
             logger.info(f"Starting server update - {datetime.now().isoformat()}")
             cin, cout, cerr = ssh.exec_command('cs2-server update')
             com_out = cout.read().decode()
-            com_err = cout.read().decode()
+            com_err = cerr.read().decode()
+            com_in = cin.read().decode()
             logger.warning(f"Output - {com_out}")
             logger.warning(f"Error - {com_err}")
+            logger.warning(f"In - {com_in}")
         else:
             logger.info(f"Server is up to date! Current version{server_version} - {datetime.now().isoformat()}")
 
