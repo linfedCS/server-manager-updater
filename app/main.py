@@ -77,10 +77,10 @@ def check_version():
                 return
 
             status_data = status_response.json()
-            
-            logger.info(f"Sending alert - {datetime.now().isoformat()}")
+
             for status in status_data:
                 if status["status"] == "online":
+                    logger.info(f"Sending alert - {datetime.now().isoformat()}")
                     for _ in range(3):
                         ssh.exec_command(f'cs2-server @prac{status["id"]} exec say CS2  HAS BEEN UPDATED, NEED TO UPDATE SERVER')
 
@@ -93,7 +93,7 @@ def check_version():
                         ssh.exec_command(f'cs2-server @prac{status["id"]} stop')
 
             logger.info(f"Starting server update - {datetime.now().isoformat()}")
-            ssh.exec_command(f'cs2-server update')
+            ssh.exec_command('cs2-server update')
         else:
             logger.info(f"Server is up to date! Current version{server_version} - {datetime.now().isoformat()}")
 
