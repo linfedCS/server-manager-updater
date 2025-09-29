@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 API_URL = os.getenv("API_URL")
 STEAM_API_URL = os.getenv("STEAM_API_URL")
 
-SSH_HOST = os.getenv("HOST_IP")
+SSH_HOST = os.getenv("SSH_HOST")
 SSH_USER = os.getenv("SSH_USER")
 SSH_PRIVATE_KEY = os.getenv("SSH_KEY")
 if SSH_PRIVATE_KEY is not None:
@@ -104,7 +104,7 @@ def check_version():
             logger.warning(f"Error - {com_err}")
             logger.warning(f"In - {com_in}")
         else:
-            logger.info(f"Server is up to date! Current version{server_version} - {datetime.now().isoformat()}")
+            logger.info(f"Server is up to date! Current version {server_version} - {datetime.now().isoformat()}")
 
     except Exception as e:
         logger.error(f"Error occurred: {str(e)}")
