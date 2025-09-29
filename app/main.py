@@ -20,7 +20,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SSH_HOST = os.getenv("HOST_IP", "linfed.ru")
+API_URL = os.getenv("API_URL")
+STEAM_API_URL = os.getenv("STEAM_API_URL")
+
+SSH_HOST = os.getenv("HOST_IP")
 SSH_USER = os.getenv("SSH_USER")
 SSH_PRIVATE_KEY = os.getenv("SSH_KEY")
 if SSH_PRIVATE_KEY is not None:
@@ -56,7 +59,7 @@ def check_version():
 
         key = os.getenv("STEAM_WEB_API_KEY")
         params = {"key": key}
-        response = requests.get("https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1/", params=params)
+        response = requests.get(f"{STEAM_API_URL}", params=params)
 
         if  not response.ok:
             logger.warning(f"Couldn't get version from API: {response.status_code} - {datetime.now().isoformat()}")
@@ -70,7 +73,7 @@ def check_version():
             logger.info(f"Server version is outdated - {datetime.now().isoformat()}")
 
             logger.info(f"Getting status servers - {datetime.now().isoformat()}")
-            status_response = requests.get("https://dev.linfed.ru/api/servers")
+            status_response = requests.get(f"{API_URL}")
 
             if not status_response.ok:
                 logger.warning(f"Couldn't get server status: {status_response.status_code}")
@@ -116,7 +119,7 @@ def run_scheduler():
     logger.info("Scheduler starting")
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(60)
 
 if __name__ == "__main__":
     run_scheduler()
