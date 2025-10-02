@@ -80,7 +80,7 @@ def check_version():
             logger.info(f"Server version is outdated - {datetime.now().isoformat()}")
 
             logger.info(f"Getting status servers - {datetime.now().isoformat()}")
-            status_response = requests.get(f"{API_URL}/servers")
+            status_response = requests.get(f"{API_URL}/api/servers")
 
             if not status_response.ok:
                 logger.warning(
