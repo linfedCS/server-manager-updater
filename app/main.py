@@ -15,8 +15,8 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("/app/logs/app.log")
-    ]
+        # logging.FileHandler("/app/logs/app.log")
+    ],
 )
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,7 @@ if SSH_PRIVATE_KEY is not None:
 else:
     logger.error(f"Error get ssh_key file - {datetime.now().isoformat()}")
 
+
 def check_version():
     logger.info(f"Starting checking version - {datetime.now().isoformat()}")
     try:
@@ -44,12 +45,16 @@ def check_version():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(SSH_HOST, username=SSH_USER, key_filename="ssh_key")
-        stdin, stdout, stderr = ssh.exec_command('grep -w "PatchVersion" msm.d/cs2/base/game/csgo/steam.inf')
+        stdin, stdout, stderr = ssh.exec_command(
+            'grep -w "PatchVersion" msm.d/cs2/base/game/csgo/steam.inf'
+        )
         output = stdout.read().decode()
         error = stderr.read().decode()
 
         if error.strip():
-            logger.warning(f"Cannot read steam.inf file: {error} - {datetime.now().isoformat()}")
+            logger.warning(
+                f"Cannot read steam.inf file: {error} - {datetime.now().isoformat()}"
+            )
             return
 
         server_version = str(re.sub(r"\D", "", output))
@@ -61,8 +66,10 @@ def check_version():
         params = {"key": key}
         response = requests.get(f"{STEAM_API_URL}", params=params)
 
-        if  not response.ok:
-            logger.warning(f"Couldn't get version from API: {response.status_code} - {datetime.now().isoformat()}")
+        if not response.ok:
+            logger.warning(
+                f"Couldn't get version from API: {response.status_code} - {datetime.now().isoformat()}"
+            )
             return
 
         data = response.json()
@@ -73,10 +80,12 @@ def check_version():
             logger.info(f"Server version is outdated - {datetime.now().isoformat()}")
 
             logger.info(f"Getting status servers - {datetime.now().isoformat()}")
-            status_response = requests.get(f"{API_URL}")
+            status_response = requests.get(f"{API_URL}/servers")
 
             if not status_response.ok:
-                logger.warning(f"Couldn't get server status: {status_response.status_code}")
+                logger.warning(
+                    f"Couldn't get server status: {status_response.status_code}"
+                )
                 return
 
             status_data = status_response.json()
@@ -85,18 +94,22 @@ def check_version():
                 if status["status"] == "online":
                     logger.info(f"Sending alert - {datetime.now().isoformat()}")
                     for _ in range(3):
-                        ssh.exec_command(f'cs2-server @prac{status["id"]} exec say CS2  HAS BEEN UPDATED, NEED TO UPDATE SERVER')
+                        ssh.exec_command(
+                            f'cs2-server @prac{status["id"]} exec say CS2  HAS BEEN UPDATED, NEED TO UPDATE SERVER'
+                        )
 
-                    ssh.exec_command(f'cs2-server @prac{status["id"]} exec say AFTER THE UPDATE, YOU NEED TO START THE SERVER IMMEDIATELY')
+                    ssh.exec_command(
+                        f'cs2-server @prac{status["id"]} exec say AFTER THE UPDATE, YOU NEED TO START THE SERVER IMMEDIATELY'
+                    )
                     time.sleep(60)
 
             for status in status_data:
-                    if status["status"] == "online":
-                        logger.info(f"Stop servers {datetime.now().isoformat()}")
-                        ssh.exec_command(f'cs2-server @prac{status["id"]} stop')
+                if status["status"] == "online":
+                    logger.info(f"Stop servers {datetime.now().isoformat()}")
+                    ssh.exec_command(f'cs2-server @prac{status["id"]} stop')
 
             logger.info(f"Starting server update - {datetime.now().isoformat()}")
-            cin, cout, cerr = ssh.exec_command('cs2-server update')
+            cin, cout, cerr = ssh.exec_command("cs2-server update")
             com_out = cout.read().decode()
             com_err = cerr.read().decode()
             com_in = cin.read().decode()
@@ -104,12 +117,15 @@ def check_version():
             logger.warning(f"Error - {com_err}")
             logger.warning(f"In - {com_in}")
         else:
-            logger.info(f"Server is up to date! Current version {server_version} - {datetime.now().isoformat()}")
+            logger.info(
+                f"Server is up to date! Current version {server_version} - {datetime.now().isoformat()}"
+            )
 
     except Exception as e:
         logger.error(f"Error occurred: {str(e)}")
     finally:
         ssh.close()
+
 
 def run_scheduler():
     schedule.every(10).minutes.do(check_version)
@@ -120,6 +136,7 @@ def run_scheduler():
     while True:
         schedule.run_pending()
         time.sleep(60)
+
 
 if __name__ == "__main__":
     run_scheduler()
